@@ -1,0 +1,55 @@
+version: "3.3"
+services:
+  admin:
+    container_name: admin
+    image: admin-service:1.0.0
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    command: npm run start:dev
+    hostname: admin
+    ports:
+      - 3000:3000
+    networks:
+      - sampleMicro
+    volumes:
+      - ./admin/src:/app/src
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://iipyxiuz:Ja9-puwQS8sawW1pbbWnNRm-fzl48jVz@tyke.db.elephantsql.com/iipyxiuz
+  main:
+    container_name: main
+    image: main-service:1.0.0
+    build:
+      context: ./main
+      dockerfile: Dockerfile
+    command: npm run start:dev
+    hostname: main
+    ports:
+      - 8001:8001
+    networks:
+      - sampleMicro
+    volumes:
+      - ./main:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+  mongodb:
+    #providing image to create container
+    image: mongo
+    container_name: mongodb
+    restart: on-failure
+    ports:
+      - 27018:27017
+    #This is a parsistant storage for docker
+    networks:
+      - sampleMicro
+    volumes:
+      - mongo_db:/data/db
+networks:
+  sampleMicro:
+    name: sampleMicro
+volumes:
+  mongo_db:
